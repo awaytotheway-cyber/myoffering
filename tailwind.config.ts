@@ -1,0 +1,2 @@
+import type { Config } from 'tailwindcss';
+export default { content: ['./index.html', './src/**/*.{ts,tsx}'], theme: { extend: { colors: { ivory: '#FDF8F0', ink: '#22243A', krishna: '#1E3A75', 'krishna-deep': '#14274E', saffron: '#D9A441', gold: '#F0B429', lotus: '#E7A6C1', parchment: '#E8DFC8', night: '#0D1230', 'night-deep': '#080A1C', 'night-surface': '#151A3B' }, fontFamily: { serif: ['Cormorant Garamond', 'serif'], sans: ['Manrope', 'sans-serif'] } } }, plugins: [] } satisfies Config;
