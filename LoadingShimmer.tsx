@@ -1,0 +1,1 @@
+export function LoadingShimmer() { return <div className="loading-region" role="status" aria-live="polite"><p>Searching the teachings…</p>{[1, 2, 3].map(item => <div className="shimmer-card" key={item}><i /><i /><i /></div>)}</div>; }
