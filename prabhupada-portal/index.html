@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Srila Prabhupada Knowledge Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'prabhupada-saffron': '#FF9933',
+                        'prabhupada-gold': '#D4842A',
+                        'prabhupada-blue': '#1E3A5F',
+                        'prabhupada-cream': '#FAF9F6',
+                        'prabhupada-slate': '#2D3748',
+                    },
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FAF9F6;
+            color: #2D3748;
+        }
+        
+        .timeline-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .timeline-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(30, 58, 95, 0.15);
+        }
+        
+        .timeline-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+        }
+        
+        .timeline-content.expanded {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        
+        .quote-widget {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .search-loading {
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-prabhupada-blue to-prabhupada-saffron text-white py-8 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h1 class="font-serif text-4xl md:text-5xl font-bold mb-2">Srila Prabhupada Knowledge Portal</h1>
+                <p class="text-lg opacity-90 font-light">Discover the life, teachings, and timeless wisdom of His Divine Grace A.C. Bhaktivedanta Swami Prabhupada</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        
+        <!-- Search Section -->
+        <section class="mb-16">
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl p-8 border border-prabhupada-cream">
+                    <h2 class="font-serif text-2xl font-semibold text-prabhupada-blue mb-4 text-center">Ask About Srila Prabhupada's Teachings</h2>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput"
+                            placeholder="Ask about Srila Prabhupada's instructions on bhakti, travel, or morning walks..."
+                            class="w-full px-6 py-4 pr-32 border-2 border-prabhupada-cream rounded-xl focus:outline-none focus:border-prabhupada-saffron text-lg transition-colors"
+                        />
+                        <button 
+                            id="searchBtn"
+                            class="absolute right-2 top-2 bottom-2 bg-prabhupada-saffron hover:bg-prabhupada-gold text-white px-6 rounded-lg font-medium transition-colors flex items-center gap-2"
+                        >
+                            <span>Search</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingState" class="hidden mt-6">
+                        <div class="flex items-center justify-center gap-3 text-prabhupada-blue">
+                            <div class="w-6 h-6 border-4 border-prabhupada-saffron search-loading rounded-full"></div>
+                            <span class="font-medium">Searching through Srila Prabhupada's teachings...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Results -->
+                    <div id="searchResults" class="mt-6 hidden">
+                        <div class="bg-prabhupada-cream rounded-xl p-6 border-l-4 border-prabhupada-saffron">
+                            <div id="responseContent" class="prose prose-prabhupada max-w-none">
+                                <!-- Response will be inserted here -->
+                            </div>
+                            <div id="sourceReferences" class="mt-4 pt-4 border-t border-prabhupada-gold/30">
+                                <!-- Sources will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="errorState" class="hidden mt-6">
+                        <div class="bg-red-50 border-l-4 border-red-500 rounded-xl p-4">
+                            <p class="text-red-700" id="errorMessage">An error occurred. Please try again.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section class="mb-16">
+            <h2 class="font-serif text-3xl font-bold text-prabhupada-blue mb-8 text-center">Journey Through Time (1896 – 1977)</h2>
+            <div id="timelineContainer" class="space-y-4">
+                <!-- Timeline cards will be generated by JavaScript -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Daily Wisdom Quote Widget -->
+    <div class="quote-widget fixed bottom-6 right-6 z-50 max-w-sm w-full">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 border-l-4 border-prabhupada-saffron">
+            <div class="flex justify-between items-start mb-3">
+                <h3 class="font-serif text-lg font-semibold text-prabhupada-blue">Daily Wisdom</h3>
+                <button id="refreshQuote" class="text-prabhupada-saffron hover:text-prabhupada-gold transition-colors" title="New Quote">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+            </div>
+            <blockquote id="dailyQuote" class="text-prabhupada-slate italic mb-4 leading-relaxed">
+                "Chant Hare Krishna and be happy."
+            </blockquote>
+            <cite id="quoteSource" class="text-sm text-prabhupada-blue font-medium block mb-4">— Srila Prabhupada</cite>
+            <div class="flex gap-2">
+                <button id="copyQuote" class="flex-1 bg-prabhupada-cream hover:bg-prabhupada-saffron hover:text-white text-prabhupada-blue py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copy
+                </button>
+                <button id="shareQuote" class="flex-1 bg-prabhupada-cream hover:bg-prabhupada-saffron hover:text-white text-prabhupada-blue py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                    </svg>
+                    Share
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-prabhupada-blue text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p class="opacity-80">© 2024 Srila Prabhupada Knowledge Portal. All rights reserved.</p>
+            <p class="text-sm opacity-60 mt-2">Built with devotion for ISKCON devotees worldwide</p>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const BACKEND_WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE'; // Replace with your n8n webhook URL
+        
+        // Timeline Data
+        const timelineData = [
+            {
+                year: 1896,
+                title: "Birth of Abhay Charan De",
+                summary: "September 1, 1896 - Born in Calcutta, India",
+                details: [
+                    "Born at 12:00 PM in Tollygunge, Calcutta",
+                    "Parents: Gour Mohan De and Rajani Devi",
+                    "Named Abhay Charan (one who is fearless)",
+                    "Family belonged to the aristocratic kayastha community"
+                ]
+            },
+            {
+                year: 1922,
+                title: "First Meeting with Bhaktisiddhanta Sarasvati",
+                summary: "Life-changing encounter in Calcutta",
+                details: [
+                    "Met his spiritual master at Gaudiya Math",
+                    "Bhaktisiddhanta instructed him to spread Krishna consciousness",
+                    "Received initiation into the mission of Chaitanya Mahaprabhu",
+                    "This meeting changed the course of his life forever"
+                ]
+            },
+            {
+                year: 1936,
+                title: "Order from Spiritual Master",
+                summary: "Final instruction before Bhaktisiddhanta's departure",
+                details: [
+                    "Bhaktisiddhanta Sarasvati passed away in January",
+                    "Received letter emphasizing preaching in English",
+                    "Instruction to spread Krishna consciousness in the West",
+                    "Began contemplating how to fulfill this order"
+                ]
+            },
+            {
+                year: 1944,
+                title: "Back to Godhead Magazine",
+                summary: "Started publishing spiritual magazine",
+                details: [
+                    "Launched Back to Godhead magazine",
+                    "Wrote articles explaining Vedic philosophy",
+                    "Reached English-speaking audience in India",
+                    "Laid groundwork for future international publications"
+                ]
+            },
+            {
+                year: 1950,
+                title: "Retirement from Family Life",
+                summary: "Took vanaprastha ashrama at age 54",
+                details: [
+                    "Retired from household responsibilities",
+                    "Traveled throughout India as a pilgrim",
+                    "Visited holy places like Vrindavan, Mathura, Jagannath Puri",
+                    "Deepened his spiritual practice and writing"
+                ]
+            },
+            {
+                year: 1953,
+                title: "Meeting Srimati Radharani",
+                summary: "Spiritual encounter in Vrindavan",
+                details: [
+                    "Had darshan of Srimati Radharani at Seva Kunj",
+                    "Received divine confirmation of his mission",
+                    "Strengthened resolve to preach Krishna consciousness",
+                    "Composed prayers and poems in devotion"
+                ]
+            },
+            {
+                year: 1959,
+                title: "Sannyasa Initiation",
+                summary: "Took the renounced order of sannyasa",
+                details: [
+                    "Initiated by Bhaktiprajnana Kesava Goswami",
+                    "Given the name Bhaktivedanta Swami",
+                    "Fully dedicated to preaching mission",
+                    "Began serious work on Bhagavad-gita translation"
+                ]
+            },
+            {
+                year: 1965,
+                title: "Journey to America",
+                summary: "Historic voyage aboard Jaladuta",
+                details: [
+                    "Departed Calcutta on August 13, 1965",
+                    "Traveled alone at age 69 with minimal possessions",
+                    "Carried boxes of books and one trunk of clothes",
+                    "Arrived in New York on September 19, 1965",
+                    "Faced seasickness and heart attacks during journey"
+                ]
+            },
+            {
+                year: 1966,
+                title: "Founding of ISKCON",
+                summary: "Incorporation of International Society for Krishna Consciousness",
+                details: [
+                    "ISKCON incorporated on July 11, 1966",
+                    "First temple established at 26 Second Avenue, NYC",
+                    "Began regular kirtan and lectures",
+                    "First disciples initiated: Carl Yearwood (Shyamasundar) and John Grady (Brahmananda)",
+                    "Started Bhagavad-gita As It Is publication"
+                ]
+            },
+            {
+                year: 1967,
+                title: "Expansion Begins",
+                summary: "First temples outside New York",
+                details: [
+                    "Temple opened in San Francisco",
+                    "Montreal temple established",
+                    "Growing number of Western disciples",
+                    "Public sankirtan movement spreading"
+                ]
+            },
+            {
+                year: 1968,
+                title: "European Expansion",
+                summary: "First temples in Europe",
+                details: [
+                    "London temple established",
+                    "Hamburg, Germany temple opened",
+                    "First European ratha-yatra festival",
+                    "Continued book distribution efforts"
+                ]
+            },
+            {
+                year: 1970,
+                title: "Mayapur Land Acquisition",
+                summary: "Acquisition of birthplace of Chaitanya Mahaprabhu",
+                details: [
+                    "Purchased land in Mayapur, West Bengal",
+                    "Vision for Temple of the Vedic Planetarium",
+                    "Annual Mayapur festival begins",
+                    "Global preaching network expanding rapidly"
+                ]
+            },
+            {
+                year: 1972,
+                title: "Dallas Farm Community",
+                summary: "First rural farm community in USA",
+                details: [
+                    "New Vrindaban farm community established",
+                    "Self-sufficient Krishna conscious lifestyle demonstrated",
+                    "Multiple farm communities follow worldwide",
+                    "Gurukul school system initiated"
+                ]
+            },
+            {
+                year: 1974,
+                title: "World Tour & Book Distribution",
+                summary: "Extensive global preaching tours",
+                details: [
+                    "Visited Australia, Africa, South America",
+                    "Over 50 books published and distributed",
+                    "BTG magazine reaching millions",
+                    "Hundreds of centers established worldwide"
+                ]
+            },
+            {
+                year: 1975,
+                title: "Vrindavan Temple Inauguration",
+                summary: "Grand opening of Krishna-Balaram Mandir",
+                details: [
+                    "Temple inaugurated in holy dhama of Vrindavan",
+                    "Deities installed: Krishna-Balaram, Radha-Shyamasundar, Gaura-Nitai",
+                    "Guest house for pilgrims established",
+                    "Samadhi mandir planned for future"
+                ]
+            },
+            {
+                year: 1977,
+                title: "Disappearance Day",
+                summary: "November 14, 1977 - Departure from this world",
+                details: [
+                    "Left physical body in Vrindavan",
+                    "Samadhi mandir constructed at Krishna-Balaram temple",
+                    "Left behind worldwide movement with thousands of followers",
+                    "Mission continues through books, disciples, and devotees",
+                    "Over 80 volumes of transcendental literature published"
+                ]
+            }
+        ];
+
+        // Daily Quotes
+        const dailyQuotes = [
+            {
+                quote: "Chant Hare Krishna and be happy.",
+                source: "Srila Prabhupada"
+            },
+            {
+                quote: "Krishna consciousness is not an artificial imposition on the mind. This consciousness is the original energy of the living entity.",
+                source: "Bhagavad-gita As It Is"
+            },
+            {
+                quote: "We are not this body. We are spirit souls, eternal servants of Krishna.",
+                source: "Teachings of Lord Chaitanya"
+            },
+            {
+                quote: "The Hare Krishna maha-mantra is a spiritual call. It is not a material sound.",
+                source: "Science of Self-Realization"
+            },
+            {
+                quote: "Devotional service is the only means for attaining pure love of God.",
+                source: "Nectar of Devotion"
+            },
+            {
+                quote: "Our mission is to make everyone happy. That is our business.",
+                source: "Morning Walk Conversation"
+            },
+            {
+                quote: "Simply chant Hare Krishna mantra and dance before Krishna, and take prasadam.",
+                source: "Room Conversation"
+            },
+            {
+                quote: "The soul is never born nor dies. Having once come to be, it never ceases to be.",
+                source: "Bhagavad-gita Commentary"
+            }
+        ];
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTimeline();
+            loadRandomQuote();
+            setupEventListeners();
+        });
+
+        // Render Timeline
+        function renderTimeline() {
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = '';
+
+            timelineData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'timeline-card bg-white rounded-xl shadow-md overflow-hidden border border-prabhupada-cream cursor-pointer';
+                card.setAttribute('data-year', item.year);
+                
+                card.innerHTML = `
+                    <div class="p-6 flex items-center justify-between hover:bg-prabhupada-cream/50 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-prabhupada-saffron to-prabhupada-gold rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                ${item.year}
+                            </div>
+                            <div>
+                                <h3 class="font-serif text-xl font-semibold text-prabhupada-blue">${item.title}</h3>
+                                <p class="text-prabhupada-slate mt-1">${item.summary}</p>
+                            </div>
+                        </div>
+                        <svg class="w-6 h-6 text-prabhupada-saffron transform transition-transform duration-300 expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                    <div class="timeline-content bg-prabhupada-cream/50 border-t border-prabhupada-cream">
+                        <div class="p-6">
+                            <h4 class="font-serif text-lg font-semibold text-prabhupada-blue mb-4">Key Events of ${item.year}:</h4>
+                            <ul class="space-y-2">
+                                ${item.details.map(detail => `
+                                    <li class="flex items-start gap-3">
+                                        <svg class="w-5 h-5 text-prabhupada-saffron mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-prabhupada-slate">${detail}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => toggleTimelineItem(card));
+                container.appendChild(card);
+            });
+        }
+
+        // Toggle Timeline Item
+        function toggleTimelineItem(card) {
+            const content = card.querySelector('.timeline-content');
+            const icon = card.querySelector('.expand-icon');
+            
+            // Close other open items
+            document.querySelectorAll('.timeline-content.expanded').forEach(item => {
+                if (item !== content) {
+                    item.classList.remove('expanded');
+                    item.previousElementSibling.querySelector('.expand-icon').classList.remove('rotate-180');
+                }
+            });
+
+            // Toggle current item
+            content.classList.toggle('expanded');
+            icon.classList.toggle('rotate-180');
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            // Quote widget buttons
+            document.getElementById('refreshQuote').addEventListener('click', loadRandomQuote);
+            document.getElementById('copyQuote').addEventListener('click', copyQuote);
+            document.getElementById('shareQuote').addEventListener('click', shareQuote);
+        }
+
+        // Perform Search via Webhook
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const loadingState = document.getElementById('loadingState');
+            const searchResults = document.getElementById('searchResults');
+            const errorState = document.getElementById('errorState');
+            const responseContent = document.getElementById('responseContent');
+            const sourceReferences = document.getElementById('sourceReferences');
+
+            // Reset states
+            loadingState.classList.remove('hidden');
+            searchResults.classList.add('hidden');
+            errorState.classList.add('hidden');
+
+            try {
+                const response = await fetch(BACKEND_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Display results
+                displaySearchResults(data, responseContent, sourceReferences);
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showError(`Unable to connect to knowledge base. Please check your connection and try again.`);
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        // Display Search Results
+        function displaySearchResults(data, responseContent, sourceReferences) {
+            const searchResults = document.getElementById('searchResults');
+            
+            // Format the response (adjust based on your n8n webhook response structure)
+            const answer = data.answer || data.response || data.message || 'No information found.';
+            const sources = data.sources || data.references || [];
+
+            // Create formatted HTML
+            responseContent.innerHTML = `
+                <div class="fade-in">
+                    <p class="text-lg leading-relaxed text-prabhupada-slate">${answer}</p>
+                </div>
+            `;
+
+            // Add sources if available
+            if (sources.length > 0) {
+                sourceReferences.innerHTML = `
+                    <h4 class="font-semibold text-prabhupada-blue mb-2">Sources:</h4>
+                    <ul class="space-y-1">
+                        ${sources.map(source => `
+                            <li class="text-sm text-prabhupada-slate flex items-center gap-2">
+                                <svg class="w-4 h-4 text-prabhupada-saffron" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+                                </svg>
+                                ${source}
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            } else {
+                sourceReferences.innerHTML = '';
+            }
+
+            searchResults.classList.remove('hidden');
+            searchResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Show Error
+        function showError(message) {
+            const errorState = document.getElementById('errorState');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            errorMessage.textContent = message;
+            errorState.classList.remove('hidden');
+        }
+
+        // Load Random Quote
+        function loadRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * dailyQuotes.length);
+            const quote = dailyQuotes[randomIndex];
+            
+            const quoteElement = document.getElementById('dailyQuote');
+            const sourceElement = document.getElementById('quoteSource');
+            
+            quoteElement.style.opacity = '0';
+            sourceElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                quoteElement.textContent = `"${quote.quote}"`;
+                sourceElement.textContent = `— ${quote.source}`;
+                
+                quoteElement.style.transition = 'opacity 0.3s ease';
+                sourceElement.style.transition = 'opacity 0.3s ease';
+                quoteElement.style.opacity = '1';
+                sourceElement.style.opacity = '1';
+            }, 300);
+        }
+
+        // Copy Quote
+        function copyQuote() {
+            const quote = document.getElementById('dailyQuote').textContent;
+            const source = document.getElementById('quoteSource').textContent;
+            const fullQuote = `${quote} ${source}`;
+            
+            navigator.clipboard.writeText(fullQuote).then(() => {
+                const copyBtn = document.getElementById('copyQuote');
+                const originalText = copyBtn.innerHTML;
+                
+                copyBtn.innerHTML = `
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    Copied!
+                `;
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Share Quote
+        function shareQuote() {
+            const quote = document.getElementById('dailyQuote').textContent;
+            const source = document.getElementById('quoteSource').textContent;
+            const fullQuote = `${quote} ${source}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Daily Wisdom from Srila Prabhupada',
+                    text: fullQuote,
+                    url: window.location.href
+                }).catch(err => {
+                    console.error('Share failed:', err);
+                });
+            } else {
+                // Fallback to clipboard
+                copyQuote();
+                alert('Quote copied to clipboard! You can now share it.');
+            }
+        }
+    </script>
+</body>
+</html>
